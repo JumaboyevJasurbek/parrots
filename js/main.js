@@ -25,8 +25,10 @@ const createParrotBox = (product) => {
 
     const elParrotSize = elParrotBox.querySelector("#card-size");
     elParrotSize.textContent = `${sizes.width}sm x ${sizes.height}sm`;
+
     const elTelDate = elParrotBox.querySelector(".card-data");
     const parrotsDate = new Date(birthDate);
+
     elTelDate.textContent = `${addZero(parrotsDate.getDate())}.${addZero(
     parrotsDate.getMonth() + 1
   )}.${parrotsDate.getFullYear()} ${addZero(parrotsDate.getHours())}:${addZero(
@@ -45,9 +47,16 @@ const createParrotBox = (product) => {
     elParrotFeatures.textContent = features;
 
 
+    const elIsFavorite = elParrotBox.querySelector('.btn-success')
+    elIsFavorite.value = isFavorite;
+
+
     //?  Dataset bn ishlash
     const elAddBtn = elParrotBox.querySelector(".btn-trash");
     elAddBtn.dataset.id = id;
+
+    const elSuccessBtn = elParrotBox.querySelector(".btn-success");
+    elSuccessBtn.dataset.id = id;
 
     const elEditBtn = elParrotBox.querySelector(".btn-secondary");
     elEditBtn.dataset.id = id;
@@ -91,20 +100,22 @@ elAddParrotForm.addEventListener("submit", (e) => {
     const formImg = formElement["parrot-img"].value;
     const formPrice = +formElement["price"].value.trim();
     const formBrithDay = formElement["parrot-date"].value;
-    const formWidth = formElement["parrot_width"].value;
-    const formHeight = formElement["parrot_height"].value;
+    const formWidth = +formElement["parrot_width"].value;
+    const formHeight = +formElement["parrot_height"].value;
     const formFeatures = formElement["features"].value.trim();
 
     // console.log(formWidth);
 
     if (formTitle && formPrice && formBrithDay && formWidth && formHeight > 0) {
         const addingProduct = {
-            id: `id: ${Math.floor(Math.random() * 1000)}`,
+            id: Math.floor(Math.random() * 1000),
             title: formTitle,
             img: formImg,
             price: formPrice,
-            sizes: formWidth,
-            sizes: formHeight,
+            sizes: {
+                width: formWidth,
+                height: formHeight
+            },
             birthDate: formBrithDay,
             features: formFeatures
         };
@@ -152,11 +163,12 @@ elParrotWrapper.addEventListener("click", (evt) => {
     if (evt.target.matches(".btn-secondary")) {
         const clickedBtn = +evt.target.dataset.id;
         const clickedBtnObj = products.find((product) => product.id === clickedBtn);
+
         if (clickedBtnObj) {
-            const { title, img, price, birthDate, sizes, features } = clickedBtnObj
+            const { title, img, price, birthDate, sizes, features } = clickedBtnObj;
             elEditTitle.value = title || "";
             elEditImg.value = img;
-            console.log(elEditImg);
+            // console.log(elEditImg);
             elEditPrice.value = price || "";
             elEditDate.value = birthDate;
             elEditWidth.value = sizes.width || "";
@@ -168,6 +180,19 @@ elParrotWrapper.addEventListener("click", (evt) => {
             // console.log(clickedBtnObj.id);
         }
     }
+
+
+    // if (evt.target.matches(".btn-success")) {
+    //     const icon = document.querySelector('.success-icon')
+    //     if (icon.classList.remove('fa-star-o')) {
+    //         icon.classList.remove('fa');
+    //         icon.classList.add('fa-star')
+    //     };
+    //     console.log(icon);
+    //     renderParrots();
+
+
+    // }
 });
 
 
@@ -182,6 +207,7 @@ elEditForm.addEventListener("submit", (e) => {
     const birthDateValue = elEditDate.value;
     const widthValue = elEditWidth.value.trim();
     const heightValue = elEditHeight.value.trim();
+    const featuresValue = elEditFeatures.value.trim();
 
     // console.log(editingId);
     if (titleInputValue && imgValue && priceValue && birthDateValue && widthValue && heightValue > 0) {
@@ -192,9 +218,12 @@ elEditForm.addEventListener("submit", (e) => {
             title: titleInputValue,
             img: imgValue,
             price: priceValue,
-            birthDate: new Date().toISOString(),
-            sizesWidth: widthValue,
-            sizesHeight: heightValue,
+            birthDate: birthDateValue,
+            sizes: {
+                width: widthValue,
+                height: heightValue,
+            },
+            features: featuresValue
         };
         // console.log(editProduct.img.src);
 
@@ -238,38 +267,51 @@ elFilterForm.addEventListener("submit", (e) => {
             const productPrice = product.price;
             return !priceToValue ? true : productPrice <= priceToValue;
         })
-        // .filter((product) => {
-        //     const manufactureFilter = product.model;
-        //     return manufactureFilter === manufacturerValue;
-        // })
-        .sort((a, b) => {
-            // ? Switch case bn ishlash
-            switch (sortByValue) {
-                case "1":
-                    if (a.title > b.title) {
-                        return 1;
-                    } else if (a.title === b.title) {
-                        return 0;
-                    }
-                    return -1;
-                case "2":
-                    return b.price - a.price;
-                case "3":
-                    return a.price - b.price;
-                case "4":
-                    return (
-                        new Date(a.birthDate).getTime() - new Date(b.birthDate).getTime()
-                    );
-                case "5":
-                    return (
-                        new Date(b.birthDate).getTime() - new Date(a.birthDate).getTime()
-                    );
+        .filter((product) => {
+            const productWidth = product.sizes.width;
+            return productWidth >= widthFromValue;
+        })
+        .filter((product) => {
+            const productWidth = product.sizes.width;
+            return !widthToValue ? true : productWidth <= widthToValue;
+        })
+        .filter((product) => {
+            const productHeight = product.sizes.height;
+            return productHeight >= heightFromValue;
+        })
+        .filter((product) => {
+            const productHeight = product.sizes.height;
+            return !heightToValue ? true : productHeight <= heightToValue;
+        })
 
-                default:
-                    break;
-            }
-            return 0;
-        });
+    .sort((a, b) => {
+        // ? Switch case bn ishlash
+        switch (sortByValue) {
+            case "1":
+                if (a.title > b.title) {
+                    return 1;
+                } else if (a.title === b.title) {
+                    return 0;
+                }
+                return -1;
+            case "2":
+                return b.price - a.price;
+            case "3":
+                return a.price - b.price;
+            case "4":
+                return (
+                    new Date(a.birthDate).getTime() - new Date(b.birthDate).getTime()
+                );
+            case "5":
+                return (
+                    new Date(b.birthDate).getTime() - new Date(a.birthDate).getTime()
+                );
+
+            default:
+                break;
+        }
+        return 0;
+    });
 
     renderParrots(filteredProduct);
 

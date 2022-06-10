@@ -34,7 +34,7 @@ const products = [{
             width: 138,
             height: 84
         },
-        isFavorite: false,
+        isFavorite: true,
         features: ""
     }
 ]
