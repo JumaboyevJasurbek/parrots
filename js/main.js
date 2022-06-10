@@ -12,7 +12,7 @@ const createParrotBox = (product) => {
     const elParrotBox = elParrotTemplate.cloneNode(true).content;
 
     const elParrotId = elParrotBox.querySelector('.id');
-    elParrotId.textContent = id;
+    elParrotId.textContent = `id:${id}`;
 
     const elParrotImg = elParrotBox.querySelector(".card-img");
     elParrotImg.src = img;
@@ -23,9 +23,8 @@ const createParrotBox = (product) => {
     const elParrotPrice = elParrotBox.querySelector("#card-price");
     elParrotPrice.textContent = `${price}$`;
 
-    // const elParrotSize = elParrotBox.querySelector("#card-size");
-    // elParrotSize.textContent = `${sizes.width}sm x ${sizes.height}sm`;
-
+    const elParrotSize = elParrotBox.querySelector("#card-size");
+    elParrotSize.textContent = `${sizes.width}sm x ${sizes.height}sm`;
     const elTelDate = elParrotBox.querySelector(".card-data");
     const parrotsDate = new Date(birthDate);
     elTelDate.textContent = `${addZero(parrotsDate.getDate())}.${addZero(
@@ -35,12 +34,15 @@ const createParrotBox = (product) => {
   )}`;
 
     // const elParrotFeatures = elParrotBox.querySelector(".parrots-features1");
-    // elParrotFeatures.textContent = features.slice(0, 9);
+    // elParrotFeatures.textContent = features.split(",", 1);
     // const elParrotFeatures1 = elParrotBox.querySelector(".parrots-features2");
-    // elParrotFeatures1.textContent = features.slice(10, 14);
+    // elParrotFeatures1.textContent = features.split(",", 2).splice(1, 1);
     // const elParrotFeatures2 = elParrotBox.querySelector(".parrots-features3");
-    // elParrotFeatures2.textContent = features.slice(15, 29);
+    // elParrotFeatures2.textContent = features.split(",", 2).splice(1, 1);
 
+
+    const elParrotFeatures = elParrotBox.querySelector(".parrots-features");
+    elParrotFeatures.textContent = features;
 
 
     //?  Dataset bn ishlash
@@ -57,7 +59,6 @@ const createParrotBox = (product) => {
 
 
 // ?   Products Array boyicha productlarni korsatib beradigan Render function
-
 const count = document.querySelector(".count");
 
 const renderParrots = (parrotsArray = products) => {
@@ -88,24 +89,26 @@ elAddParrotForm.addEventListener("submit", (e) => {
 
     const formTitle = formElement["parrot-title"].value.trim();
     const formImg = formElement["parrot-img"].value;
-    const formPrice = formElement["price"].value.trim();
+    const formPrice = +formElement["price"].value.trim();
     const formBrithDay = formElement["parrot-date"].value;
     const formWidth = formElement["parrot_width"].value;
     const formHeight = formElement["parrot_height"].value;
     const formFeatures = formElement["features"].value.trim();
 
-    console.log(formWidth);
+    // console.log(formWidth);
 
-    if (formTitle && formPrice && formBrithDay && formWidth && formHeight && formFeatures > 0) {
+    if (formTitle && formPrice && formBrithDay && formWidth && formHeight > 0) {
         const addingProduct = {
-            id: Math.floor(Math.random() * 1000),
+            id: `id: ${Math.floor(Math.random() * 1000)}`,
             title: formTitle,
-            img: formImg.src,
+            img: formImg,
             price: formPrice,
-            birthDate: new Date().toISOString(),
+            sizes: formWidth,
+            sizes: formHeight,
+            birthDate: formBrithDay,
+            features: formFeatures
         };
-        console.log(addingProduct);
-
+        // console.log(addingProduct);
 
         products.unshift(addingProduct);
 
@@ -149,19 +152,20 @@ elParrotWrapper.addEventListener("click", (evt) => {
     if (evt.target.matches(".btn-secondary")) {
         const clickedBtn = +evt.target.dataset.id;
         const clickedBtnObj = products.find((product) => product.id === clickedBtn);
-        // const clickedBtnObj = products[clickedBtnIndex]
         if (clickedBtnObj) {
-            elEditTitle.value = clickedBtnObj.title || "";
-            elEditImg.value = clickedBtnObj.img;
-            elEditPrice.value = clickedBtnObj.price || "";
-            elEditDate.value = clickedBtnObj.birthDate;
-            elEditWidth.value = clickedBtnObj.sizes.width || "";
-            elEditHeight.value = clickedBtnObj.sizes.height || "";
-            elEditFeatures.value = clickedBtnObj.sizes.height || "";
+            const { title, img, price, birthDate, sizes, features } = clickedBtnObj
+            elEditTitle.value = title || "";
+            elEditImg.value = img;
+            console.log(elEditImg);
+            elEditPrice.value = price || "";
+            elEditDate.value = birthDate;
+            elEditWidth.value = sizes.width || "";
+            elEditHeight.value = sizes.height || "";
+            elEditFeatures.value = features || "";
 
             elEditForm.dataset.id = clickedBtn;
 
-            console.log(clickedBtnObj.id);
+            // console.log(clickedBtnObj.id);
         }
     }
 });
@@ -172,13 +176,14 @@ elEditForm.addEventListener("submit", (e) => {
     const editingId = +e.target.dataset.id;
 
     const titleInputValue = elEditTitle.value.trim();
-    const imgValue = elEditImg.value.src;
+    const imgValue = elEditImg.value;
+    // console.log(imgValue);
     const priceValue = +elEditPrice.value.trim();
     const birthDateValue = elEditDate.value;
     const widthValue = elEditWidth.value.trim();
     const heightValue = elEditHeight.value.trim();
 
-    console.log(editingId);
+    // console.log(editingId);
     if (titleInputValue && imgValue && priceValue && birthDateValue && widthValue && heightValue > 0) {
         const editingItemIndex = products.findIndex((product) => product.id === editingId);
 
@@ -187,10 +192,11 @@ elEditForm.addEventListener("submit", (e) => {
             title: titleInputValue,
             img: imgValue,
             price: priceValue,
-            birthDate: birthDateValue,
+            birthDate: new Date().toISOString(),
             sizesWidth: widthValue,
             sizesHeight: heightValue,
         };
+        // console.log(editProduct.img.src);
 
         products.splice(editingItemIndex, 1, editProduct);
 
@@ -200,11 +206,10 @@ elEditForm.addEventListener("submit", (e) => {
 });
 
 
+
+
 //?   Filter bn ishlash
-
 const elFilterForm = document.querySelector("#filter-form");
-
-
 
 elFilterForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -253,8 +258,13 @@ elFilterForm.addEventListener("submit", (e) => {
                     return a.price - b.price;
                 case "4":
                     return (
-                        new Date(a.addedDate).getTime() - new Date(b.addedDate).getTime()
+                        new Date(a.birthDate).getTime() - new Date(b.birthDate).getTime()
                     );
+                case "5":
+                    return (
+                        new Date(b.birthDate).getTime() - new Date(a.birthDate).getTime()
+                    );
+
                 default:
                     break;
             }
