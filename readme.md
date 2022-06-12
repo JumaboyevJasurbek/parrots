@@ -1,2 +1,1 @@
-# Zimbabwa parrots
-# zimbabwa-parrots
+
